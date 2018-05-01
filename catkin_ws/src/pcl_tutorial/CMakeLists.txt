@@ -207,3 +207,9 @@ include_directories(
 
 add_executable(ros_pcl src/ros_pcl.cpp)
 target_link_libraries(ros_pcl ${catkin_LIBRARIES})
+
+add_executable(pcl_viewer src/pcl_viewer.cpp)
+target_link_libraries(pcl_viewer ${catkin_LIBRARIES})
+
+add_executable(pcd_generator src/pcd_generator.cpp)
+target_link_libraries(pcd_generator ${catkin_LIBRARIES})
