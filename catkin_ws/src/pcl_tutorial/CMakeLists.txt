@@ -213,3 +213,6 @@ target_link_libraries(pcl_viewer ${catkin_LIBRARIES})
 
 add_executable(pcd_generator src/pcd_generator.cpp)
 target_link_libraries(pcd_generator ${catkin_LIBRARIES})
+
+add_executable(histogram_classification src/histogram_classification.cpp)
+target_link_libraries(histogram_classification ${catkin_LIBRARIES})
