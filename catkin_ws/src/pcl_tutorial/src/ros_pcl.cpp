@@ -47,18 +47,9 @@ void cloud_cb(const sensor_msgs::PointCloud2ConstPtr& input)
 
     for (size_t i = 0; i < cloud_XYZRGB->points.size(); i++)
     {
-      if (cloud_XYZRGB->points[i].y > 0)
-      {
-        cloud_XYZRGB->points[i].r = 255;
-        cloud_XYZRGB->points[i].g = 0;
-        cloud_XYZRGB->points[i].b = 0;
-      }
-      else
-      {
-        cloud_XYZRGB->points[i].r = 0;
-        cloud_XYZRGB->points[i].g = 0;
-        cloud_XYZRGB->points[i].b = 0;
-      }
+      cloud_XYZRGB->points[i].r = 0;
+      cloud_XYZRGB->points[i].g = 0;
+      cloud_XYZRGB->points[i].b = 0;
     }
     pointcloud_processing();
   }
