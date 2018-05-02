@@ -16,6 +16,7 @@
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
+#include <pcl/common/transforms.h>
 
 //define point cloud type
 typedef pcl::PointCloud<pcl::PointXYZ> PointCloudXYZ;
@@ -46,7 +47,7 @@ void cloud_cb(const sensor_msgs::PointCloud2ConstPtr& input)
 
     for (size_t i = 0; i < cloud_XYZRGB->points.size(); i++)
     {
-      if (cloud_XYZRGB->points[i].x > 0)
+      if (cloud_XYZRGB->points[i].y > 0)
       {
         cloud_XYZRGB->points[i].r = 255;
         cloud_XYZRGB->points[i].g = 0;
@@ -70,11 +71,7 @@ void cloud_cb(const sensor_msgs::PointCloud2ConstPtr& input)
 //void cloud_cb(const sensor_msgs::PointCloud2ConstPtr& input)
 void pointcloud_processing()
 {
-  // Remove NaN point
-  //std::vector<int> indices;
-  //pcl::removeNaNFromPointCloud(*cloud_in, *cloud_in, indices);
-
-  std::cout << "Finish" << std::endl;
+  ROS_INFO("Success output");
   pub_XYZRGB.publish(*cloud_XYZRGB);
   pcl::toROSMsg(*cloud_XYZRGB, ros_output); //covert from pcl type to ros type
   pub_pointcloud2.publish(ros_output);
