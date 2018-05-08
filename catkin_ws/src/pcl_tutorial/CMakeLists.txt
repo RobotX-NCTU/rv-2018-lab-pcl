@@ -214,5 +214,14 @@ target_link_libraries(pcl_viewer ${catkin_LIBRARIES})
 add_executable(pcd_generator src/pcd_generator.cpp)
 target_link_libraries(pcd_generator ${catkin_LIBRARIES})
 
-add_executable(histogram_classification src/histogram_classification.cpp)
-target_link_libraries(histogram_classification ${catkin_LIBRARIES})
+add_executable(histogram_classifier src/histogram_classifier.cpp)
+target_link_libraries(histogram_classifier ${catkin_LIBRARIES})
+
+add_executable(pfh_descriptor src/pfh_descriptor.cpp)
+target_link_libraries(pfh_descriptor ${catkin_LIBRARIES})
+
+add_executable(pfh_classifier src/pfh_classifier.cpp)
+target_link_libraries(pfh_classifier ${catkin_LIBRARIES})
+
+add_executable(matching src/matching.cpp)
+target_link_libraries(matching ${catkin_LIBRARIES})
