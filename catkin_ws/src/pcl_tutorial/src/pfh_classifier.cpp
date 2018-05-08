@@ -39,7 +39,7 @@ main(int argc, char** argv)
 	// Estimate the normals.
 	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimation_scene;
 	normalEstimation_scene.setInputCloud(cloud_scene);
-	normalEstimation_scene.setRadiusSearch(0.03);
+	normalEstimation_scene.setRadiusSearch(5);
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree_scene(new pcl::search::KdTree<pcl::PointXYZ>);
 	normalEstimation_scene.setSearchMethod(kdtree_scene);
 	normalEstimation_scene.compute(*normals_scene);
@@ -51,7 +51,7 @@ main(int argc, char** argv)
 	pfh_scene.setSearchMethod(kdtree_scene);
 	// Search radius, to look for neighbors. Note: the value given here has to be
 	// larger than the radius used to estimate the normals.
-	pfh_scene.setRadiusSearch(0.05);
+	pfh_scene.setRadiusSearch(5);
 
 	pfh_scene.compute(*descriptors_scene);
 
@@ -61,7 +61,7 @@ main(int argc, char** argv)
 	// Estimate the normals.
 	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimation_model;
 	normalEstimation_model.setInputCloud(cloud_model);
-	normalEstimation_model.setRadiusSearch(0.03);
+	normalEstimation_model.setRadiusSearch(5);
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree_model(new pcl::search::KdTree<pcl::PointXYZ>);
 	normalEstimation_model.setSearchMethod(kdtree_model);
 	normalEstimation_model.compute(*normals_model);
@@ -73,7 +73,7 @@ main(int argc, char** argv)
 	pfh_model.setSearchMethod(kdtree_model);
 	// Search radius, to look for neighbors. Note: the value given here has to be
 	// larger than the radius used to estimate the normals.
-	pfh_model.setRadiusSearch(0.05);
+	pfh_model.setRadiusSearch(5);
 
 	pfh_model.compute(*descriptors_model);
 

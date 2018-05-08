@@ -38,11 +38,13 @@ main(int argc, char** argv)
 		{
 			// Find the nearest neighbor (in descriptor space)...
 			int neighborCount = matching.nearestKSearch(sceneDescriptors->at(i), 1, neighbors, squaredDistances);
+			
 			// ...and add a new correspondence if the distance is less than a threshold
-		
+			//std::cout << neighbors[0] << " " << squaredDistances[0] << std::endl;
 			if (neighborCount == 1 && squaredDistances[0] < 0.25f)
 			{
-				std::cout << squaredDistances[0] << std::endl;
+				//std::cout << sceneDescriptors->at(i).histogram[0] << " " << modelDescriptors->at(i).histogram[neighbors[0]] << std::endl;
+				//std::cout << neighbors[0] << " " << squaredDistances[0] << std::endl;
 				pcl::Correspondence correspondence(neighbors[0], static_cast<int>(i), squaredDistances[0]);
 				correspondences->push_back(correspondence);
 			}

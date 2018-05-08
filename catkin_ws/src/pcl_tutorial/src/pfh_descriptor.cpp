@@ -24,7 +24,7 @@ main(int argc, char** argv)
 	// Estimate the normals.
 	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimation;
 	normalEstimation.setInputCloud(cloud);
-	normalEstimation.setRadiusSearch(0.03);
+	normalEstimation.setRadiusSearch(5);
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
 	normalEstimation.setSearchMethod(kdtree);
 	normalEstimation.compute(*normals);
@@ -36,15 +36,15 @@ main(int argc, char** argv)
 	pfh.setSearchMethod(kdtree);
 	// Search radius, to look for neighbors. Note: the value given here has to be
 	// larger than the radius used to estimate the normals.
-	pfh.setRadiusSearch(0.05);
+	pfh.setRadiusSearch(5);
 
 	pfh.compute(*descriptors);
 	pcl::io::savePCDFileASCII ("descriptor.xml", *descriptors);
 
 	// Plotter object.
-	//pcl::visualization::PCLHistogramVisualizer viewer;
+	pcl::visualization::PCLHistogramVisualizer viewer;
 	// We need to set the size of the descriptor beforehand.
-	//viewer.addFeatureHistogram(*descriptors, 125);
+	viewer.addFeatureHistogram(*descriptors, 125);
 
-	//viewer.spin();
+	viewer.spin();
 }
