@@ -6,9 +6,9 @@
 int
 main(int argc, char** argv)
 {
-	// Object for storing the SHOT descriptors for the scene.
+	// Object for storing the pfh descriptors for the scene.
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr sceneDescriptors(new pcl::PointCloud<pcl::PFHSignature125>());
-	// Object for storing the SHOT descriptors for the model.
+	// Object for storing the pfh descriptors for the model.
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr modelDescriptors(new pcl::PointCloud<pcl::PFHSignature125>());
 
 	// Read the already computed descriptors from disk.
@@ -42,6 +42,7 @@ main(int argc, char** argv)
 		
 			if (neighborCount == 1 && squaredDistances[0] < 0.25f)
 			{
+				std::cout << squaredDistances[0] << std::endl;
 				pcl::Correspondence correspondence(neighbors[0], static_cast<int>(i), squaredDistances[0]);
 				correspondences->push_back(correspondence);
 			}
