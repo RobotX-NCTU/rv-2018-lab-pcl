@@ -133,7 +133,7 @@ int main(int argc, char** argv)
 
     ros::NodeHandle nh("~");
     // Subscriber
-    ros::Subscriber sub_cloud = nh.subscribe("/cluster_result", 1, cbPointCloud);
+    ros::Subscriber sub_cloud = nh.subscribe("/velodyne_points", 1, cbPointCloud);
     
     //Publisher
     pub_cloud_voxel = nh.advertise< pcl::PointCloud<pcl::PointXYZ> >("cloud_voxel", 1);
