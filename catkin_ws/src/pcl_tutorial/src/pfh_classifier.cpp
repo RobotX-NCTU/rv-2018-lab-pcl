@@ -27,7 +27,7 @@ main(int argc, char** argv)
 	pcl::PointCloud<pcl::Normal>::Ptr normals_model(new pcl::PointCloud<pcl::Normal>);
 	
 	// Read a PCD file from disk.
-	if (pcl::io::loadPCDFile<pcl::PointXYZ>(argv[1], *cloud_model) != 0)
+	if (pcl::io::loadPCDFile<pcl::PointXYZ>(argv[2], *cloud_model) != 0)
 	{
 		return -1;
 	}
@@ -98,8 +98,9 @@ main(int argc, char** argv)
 			int neighborCount = matching.nearestKSearch(descriptors_scene->at(i), 1, neighbors, squaredDistances);
 			// ...and add a new correspondence if the distance is less than a threshold
 		
-			if (neighborCount == 1 && squaredDistances[0] < 0.025f)
+			if (neighborCount == 1 && squaredDistances[0] < 0.25f)
 			{
+				//std::cout << neighbors[0] << " " << squaredDistances[0] << std::endl;
 				pcl::Correspondence correspondence(neighbors[0], static_cast<int>(i), squaredDistances[0]);
 				correspondences->push_back(correspondence);
 			}

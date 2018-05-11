@@ -5,8 +5,8 @@
 int
   main (int argc, char** argv)
 {
-  pcl::PointCloud<pcl::PointXYZRGB> cloud;
-
+  //pcl::PointCloud<pcl::PointXYZRGB> cloud;
+  pcl::PointCloud<pcl::PointXYZ> cloud;
   // Fill in the cloud data
   cloud.width    = 30;
   cloud.height   = 30;
@@ -85,7 +85,7 @@ int
   // Create a sphere as before but change 2 things
   // 1. the theta due to perspective limit
   // 2. the bottom part that is submerged in water
-  
+  /*
   for (size_t i = 0; i < cloud.points.size (); ++i)
   {
     float in_water = -10.0 + 3.0;
@@ -98,11 +98,11 @@ int
     cloud.points[i].z = z + 10.0;
     cloud.points[i].x = sqrt(10*10-z*z)*sin(theta);
     cloud.points[i].y = sqrt(10*10-z*z)*cos(theta);
-    cloud.points[i].r = 0;
-    cloud.points[i].g = 255;
-    cloud.points[i].b = 0;
+    //cloud.points[i].r = 0;
+    //cloud.points[i].g = 255;
+    //cloud.points[i].b = 0;
   }
-  
+  */
 
 
   // Let's create a totem (only one perspective)
@@ -110,7 +110,7 @@ int
   // 1. the theta due to perspective limit
   // 2. the bottom part that is submerged in water
   // To create a cylinder with only surface (radius = 5, height = 30) uncomment below
-  /*
+  
   for (size_t i = 0; i < cloud.points.size (); ++i)
   {  
     float in_water = 3.0;
@@ -121,13 +121,14 @@ int
     cloud.points[i].z = z;
     cloud.points[i].x = 5*sin(theta);
     cloud.points[i].y = 5*cos(theta);
-    cloud.points[i].r = 255;
-    cloud.points[i].g = 0;
-    cloud.points[i].b = 0;
+    //cloud.points[i].r = 255;
+    //cloud.points[i].g = 0;
+    //cloud.points[i].b = 0;
   }
 
   // To add the top and bottom lid
-  pcl::PointCloud<pcl::PointXYZRGB> cloud2;
+  //pcl::PointCloud<pcl::PointXYZRGB> cloud2;
+  pcl::PointCloud<pcl::PointXYZ> cloud2;
   cloud2.width    = 10;
   cloud2.height   = 10;
   cloud2.is_dense = false;
@@ -140,12 +141,12 @@ int
     cloud2.points[i].z = z;
     cloud2.points[i].x = radius*sin(theta);
     cloud2.points[i].y = radius*cos(theta);
-    cloud2.points[i].r = 255;
-    cloud2.points[i].g = 0;
-    cloud2.points[i].b = 0;
+    //cloud2.points[i].r = 255;
+    //cloud2.points[i].g = 0;
+    //cloud2.points[i].b = 0;
   }
   cloud = cloud + cloud2;
-  */
+  
 
 
   pcl::io::savePCDFileASCII ("test_pcd.pcd", cloud);

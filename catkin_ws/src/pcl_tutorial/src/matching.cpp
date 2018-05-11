@@ -40,7 +40,7 @@ main(int argc, char** argv)
 			int neighborCount = matching.nearestKSearch(sceneDescriptors->at(i), 1, neighbors, squaredDistances);
 			
 			// ...and add a new correspondence if the distance is less than a threshold
-			//std::cout << neighbors[0] << " " << squaredDistances[0] << std::endl;
+			std::cout << neighbors[0] << " " << squaredDistances[0] << std::endl;
 			if (neighborCount == 1 && squaredDistances[0] < 0.25f)
 			{
 				//std::cout << sceneDescriptors->at(i).histogram[0] << " " << modelDescriptors->at(i).histogram[neighbors[0]] << std::endl;
