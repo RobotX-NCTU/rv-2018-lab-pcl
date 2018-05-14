@@ -41,10 +41,18 @@ main(int argc, char** argv)
 	pfh.compute(*descriptors);
 	pcl::io::savePCDFileASCII ("descriptor.xml", *descriptors);
 
+	//std::cout << descriptors->at(1).histogram[116] << std::endl;
+	
+
+	// Visualize pfh of a point N
+	int N = 10;
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr descriptor_for_visualization(new pcl::PointCloud<pcl::PFHSignature125>());
+	descriptor_for_visualization->push_back(descriptors->at(N));
+
 	// Plotter object.
 	pcl::visualization::PCLHistogramVisualizer viewer;
 	// We need to set the size of the descriptor beforehand.
-	viewer.addFeatureHistogram(*descriptors, 125);
+	viewer.addFeatureHistogram(*descriptor_for_visualization, 125);
 
 	viewer.spin();
 }

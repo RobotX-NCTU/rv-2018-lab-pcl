@@ -51,4 +51,8 @@ main(int argc, char** argv)
 		}
 	}
 	std::cout << "Found " << correspondences->size() << " correspondences." << std::endl;
+
+	
+	
+
 }

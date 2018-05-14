@@ -2,7 +2,9 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/pfh.h>
 #include <pcl/visualization/histogram_visualizer.h>
+#include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/correspondence.h>
+#include <pcl/common/transforms.h>
 #include <pcl/recognition/cg/geometric_consistency.h>
 int
 main(int argc, char** argv)
@@ -10,24 +12,24 @@ main(int argc, char** argv)
 	// Step 1: get input data & get keypoints
 
 	// Object for storing the point cloud.
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_scene(new pcl::PointCloud<pcl::PointXYZ>);
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_scene(new pcl::PointCloud<pcl::PointXYZRGB>);
 	// Object for storing the normals.
 	pcl::PointCloud<pcl::Normal>::Ptr normals_scene(new pcl::PointCloud<pcl::Normal>);
 	
 	// Read a PCD file from disk.
-	if (pcl::io::loadPCDFile<pcl::PointXYZ>(argv[1], *cloud_scene) != 0)
+	if (pcl::io::loadPCDFile<pcl::PointXYZRGB>(argv[1], *cloud_scene) != 0)
 	{
 		return -1;
 	}
 
 
 	// Object for storing the point cloud.
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_model(new pcl::PointCloud<pcl::PointXYZ>);
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_model(new pcl::PointCloud<pcl::PointXYZRGB>);
 	// Object for storing the normals.
 	pcl::PointCloud<pcl::Normal>::Ptr normals_model(new pcl::PointCloud<pcl::Normal>);
 	
 	// Read a PCD file from disk.
-	if (pcl::io::loadPCDFile<pcl::PointXYZ>(argv[2], *cloud_model) != 0)
+	if (pcl::io::loadPCDFile<pcl::PointXYZRGB>(argv[2], *cloud_model) != 0)
 	{
 		return -1;
 	}
@@ -37,15 +39,15 @@ main(int argc, char** argv)
 	// Object for storing the PFH descriptors for each point.
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr descriptors_scene(new pcl::PointCloud<pcl::PFHSignature125>());
 	// Estimate the normals.
-	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimation_scene;
+	pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalEstimation_scene;
 	normalEstimation_scene.setInputCloud(cloud_scene);
 	normalEstimation_scene.setRadiusSearch(5);
-	pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree_scene(new pcl::search::KdTree<pcl::PointXYZ>);
+	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr kdtree_scene(new pcl::search::KdTree<pcl::PointXYZRGB>);
 	normalEstimation_scene.setSearchMethod(kdtree_scene);
 	normalEstimation_scene.compute(*normals_scene);
 
 	// PFH estimation object.
-	pcl::PFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::PFHSignature125> pfh_scene;
+	pcl::PFHEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::PFHSignature125> pfh_scene;
 	pfh_scene.setInputCloud(cloud_scene);
 	pfh_scene.setInputNormals(normals_scene);
 	pfh_scene.setSearchMethod(kdtree_scene);
@@ -59,15 +61,15 @@ main(int argc, char** argv)
 	// Object for storing the PFH descriptors for each point.
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr descriptors_model(new pcl::PointCloud<pcl::PFHSignature125>());
 	// Estimate the normals.
-	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimation_model;
+	pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalEstimation_model;
 	normalEstimation_model.setInputCloud(cloud_model);
 	normalEstimation_model.setRadiusSearch(5);
-	pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree_model(new pcl::search::KdTree<pcl::PointXYZ>);
+	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr kdtree_model(new pcl::search::KdTree<pcl::PointXYZRGB>);
 	normalEstimation_model.setSearchMethod(kdtree_model);
 	normalEstimation_model.compute(*normals_model);
 
 	// PFH estimation object.
-	pcl::PFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::PFHSignature125> pfh_model;
+	pcl::PFHEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::PFHSignature125> pfh_model;
 	pfh_model.setInputCloud(cloud_model);
 	pfh_model.setInputNormals(normals_model);
 	pfh_model.setSearchMethod(kdtree_model);
@@ -115,7 +117,7 @@ main(int argc, char** argv)
 	
 	std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > transformations;
 	std::vector<pcl::Correspondences> clusteredCorrespondences;
-	pcl::GeometricConsistencyGrouping<pcl::PointXYZ, pcl::PointXYZ> grouping;
+	pcl::GeometricConsistencyGrouping<pcl::PointXYZRGB, pcl::PointXYZRGB> grouping;
 	grouping.setSceneCloud(cloud_scene);
 	grouping.setInputCloud(cloud_model);
 	grouping.setModelSceneCorrespondences(correspondences);
@@ -142,10 +144,33 @@ main(int argc, char** argv)
 		std::cout << std::endl;
 		printf("\t\tt = < %0.3f, %0.3f, %0.3f >\n", translation(0), translation(1), translation(2));
 	}
-
-
-
-
+	if(clusteredCorrespondences.size()>0){
+		pcl::visualization::PCLVisualizer viewer ("Correspondence Grouping");
+		viewer.addPointCloud (cloud_scene, "scene_cloud");
+		viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "scene_cloud");
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_model_off(new pcl::PointCloud<pcl::PointXYZRGB>);
+		pcl::transformPointCloud (*cloud_model, *cloud_model_off, Eigen::Vector3f (-20,0,0), Eigen::Quaternionf (1, 0, 0, 0));
+		for (size_t i = 0; i < cloud_model_off->points.size (); ++i)
+	  	{
+	  		cloud_model_off->points[i].r = 0;
+	    	cloud_model_off->points[i].g = 0;
+	    	cloud_model_off->points[i].b = 255;
+	  	}
+		viewer.addPointCloud (cloud_model_off, "model_cloud_off");
+		viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "model_cloud_off");
+		for (size_t j = 0; j < clusteredCorrespondences[0].size(); ++j){
+			std::stringstream ss_line;
+	        ss_line << "correspondence_line" << 0 << "_" << j;
+			pcl::PointXYZRGB model_point = cloud_model_off->at (clusteredCorrespondences[0][j].index_query);
+	        pcl::PointXYZRGB scene_point = cloud_scene->at (clusteredCorrespondences[0][j].index_match);
+	        viewer.addLine<pcl::PointXYZRGB, pcl::PointXYZRGB> (model_point, scene_point, 50, 0, 50, ss_line.str ());
+		}
+		//viewer.addCoordinateSystem();
+		while (!viewer.wasStopped ())
+	  	{
+	    	viewer.spinOnce ();
+	  	}
+  	}
 }
 
 	

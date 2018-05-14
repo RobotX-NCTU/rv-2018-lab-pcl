@@ -31,7 +31,7 @@ main(int argc, char** argv)
 
 	// VFH estimation object.
 	pcl::VFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::VFHSignature308> vfh;
-	vfh.setInputCloud(object);
+	vfh.setInputCloud(cloud);
 	vfh.setInputNormals(normals);
 	vfh.setSearchMethod(kdtree);
 	// Optionally, we can normalize the bins of the resulting histogram,
@@ -47,7 +47,7 @@ main(int argc, char** argv)
 	// Plotter object.
 	pcl::visualization::PCLHistogramVisualizer viewer;
 	// We need to set the size of the descriptor beforehand.
-	viewer.addFeatureHistogram(*descriptor, 125);
+	viewer.addFeatureHistogram(*descriptor, 308);
 
 	viewer.spin();
 }
