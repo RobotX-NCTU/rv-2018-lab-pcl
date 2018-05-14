@@ -220,6 +220,9 @@ target_link_libraries(histogram_classifier ${catkin_LIBRARIES})
 add_executable(pfh_descriptor src/pfh_descriptor.cpp)
 target_link_libraries(pfh_descriptor ${catkin_LIBRARIES})
 
+add_executable(vfh_descriptor src/vfh_descriptor.cpp)
+target_link_libraries(vfh_descriptor ${catkin_LIBRARIES})
+
 add_executable(pfh_classifier src/pfh_classifier.cpp)
 target_link_libraries(pfh_classifier ${catkin_LIBRARIES})
 

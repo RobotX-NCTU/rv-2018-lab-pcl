@@ -32,7 +32,7 @@ main (int argc, char** argv)
   // Create descriptor
   radius_histogram_descriptor descriptor; 
 
-  // Step 1: find the minimum r and maximum r from cloud
+  // Step 1: find the center x, y and maximum r from cloud
   float min_r = 0, max_r = 0;
   float center_x = 0, center_y = 0;
   for (size_t i = 0; i < cloud->points.size (); ++i)

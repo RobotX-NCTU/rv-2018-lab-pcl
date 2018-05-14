@@ -111,7 +111,8 @@ main(int argc, char** argv)
 
 
 	// Step 4: calculate correspondence grouping
-
+	// Geometric consistency check
+	
 	std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > transformations;
 	std::vector<pcl::Correspondences> clusteredCorrespondences;
 	pcl::GeometricConsistencyGrouping<pcl::PointXYZ, pcl::PointXYZ> grouping;
@@ -141,6 +142,10 @@ main(int argc, char** argv)
 		std::cout << std::endl;
 		printf("\t\tt = < %0.3f, %0.3f, %0.3f >\n", translation(0), translation(1), translation(2));
 	}
+
+
+
+
 }
 
 	
