@@ -207,3 +207,27 @@ include_directories(
 
 add_executable(ros_pcl src/ros_pcl.cpp)
 target_link_libraries(ros_pcl ${catkin_LIBRARIES})
+
+add_executable(pcl_viewer src/pcl_viewer.cpp)
+target_link_libraries(pcl_viewer ${catkin_LIBRARIES})
+
+add_executable(pcd_generator src/pcd_generator.cpp)
+target_link_libraries(pcd_generator ${catkin_LIBRARIES})
+
+add_executable(histogram_classifier src/histogram_classifier.cpp)
+target_link_libraries(histogram_classifier ${catkin_LIBRARIES})
+
+add_executable(pfh_descriptor src/pfh_descriptor.cpp)
+target_link_libraries(pfh_descriptor ${catkin_LIBRARIES})
+
+add_executable(vfh_descriptor src/vfh_descriptor.cpp)
+target_link_libraries(vfh_descriptor ${catkin_LIBRARIES})
+
+add_executable(pfh_classifier src/pfh_classifier.cpp)
+target_link_libraries(pfh_classifier ${catkin_LIBRARIES})
+
+add_executable(matching src/matching.cpp)
+target_link_libraries(matching ${catkin_LIBRARIES})
+
+add_executable(pcd_modifier src/pcd_modifier.cpp)
+target_link_libraries(pcd_modifier ${catkin_LIBRARIES})
