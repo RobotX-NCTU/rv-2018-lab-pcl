@@ -2,6 +2,7 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/pfh.h>
 #include <pcl/visualization/histogram_visualizer.h>
+#include <pcl/filters/voxel_grid.h>
 int
 main(int argc, char** argv)
 {
@@ -17,14 +18,16 @@ main(int argc, char** argv)
 	{
 		return -1;
 	}
-
-	// Note: you would usually perform downsampling now. It has been omitted here
-	// for simplicity, but be aware that computation can take a long time.
-
+	/*
+	pcl::VoxelGrid<pcl::PointXYZ> sor;
+  	sor.setInputCloud (cloud);
+  	sor.setLeafSize (0.05f, 0.05f, 0.05f);
+  	sor.filter (*cloud);
+	*/
 	// Estimate the normals.
 	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimation;
 	normalEstimation.setInputCloud(cloud);
-	normalEstimation.setRadiusSearch(5);
+	normalEstimation.setRadiusSearch(0.1);
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
 	normalEstimation.setSearchMethod(kdtree);
 	normalEstimation.compute(*normals);
@@ -36,7 +39,7 @@ main(int argc, char** argv)
 	pfh.setSearchMethod(kdtree);
 	// Search radius, to look for neighbors. Note: the value given here has to be
 	// larger than the radius used to estimate the normals.
-	pfh.setRadiusSearch(5);
+	pfh.setRadiusSearch(0.5);
 
 	pfh.compute(*descriptors);
 	pcl::io::savePCDFileASCII ("descriptor.xml", *descriptors);
@@ -45,7 +48,7 @@ main(int argc, char** argv)
 	
 
 	// Visualize pfh of a point N
-	int N = 10;
+	int N = 1;
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr descriptor_for_visualization(new pcl::PointCloud<pcl::PFHSignature125>());
 	descriptor_for_visualization->push_back(descriptors->at(N));
 

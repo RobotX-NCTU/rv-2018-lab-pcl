@@ -7,6 +7,7 @@
 #include <pcl/common/transforms.h>
 #include <pcl/recognition/cg/geometric_consistency.h>
 #include <pcl/keypoints/iss_3d.h>
+#include <pcl/filters/voxel_grid.h>
 double
 computeCloudResolution(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& cloud)
 {
@@ -66,7 +67,20 @@ main(int argc, char** argv)
 	{
 		return -1;
 	}
+	//downsample
+	/*
+	pcl::VoxelGrid<pcl::PointXYZRGB> sor;
+  	sor.setInputCloud (cloud_scene);
+  	sor.setLeafSize (0.01f, 0.01f, 0.01f);
+  	sor.filter (*cloud_scene);
+
+  	pcl::VoxelGrid<pcl::PointXYZRGB> sor2;
+  	sor2.setInputCloud (cloud_model);
+  	sor2.setLeafSize (0.01f, 0.01f, 0.01f);
+  	sor2.filter (*cloud_model);
+	*/
 	// Scale model to match scene's size
+	/*
 	double cloud_scene_max_x = -1000000;
 	double cloud_scene_min_x = 1000000;
 	for (size_t i = 0; i < cloud_scene->points.size (); ++i)
@@ -93,6 +107,7 @@ main(int argc, char** argv)
 	transform (1,1) = transform (1,1) * scaling_factor;
 	transform (2,2) = transform (2,2) * scaling_factor;
 	pcl::transformPointCloud (*cloud_scene, *cloud_scene, transform); 
+	*/
 
 	/*
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints_scene(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -151,7 +166,7 @@ main(int argc, char** argv)
 	// Estimate the normals.
 	pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalEstimation_scene;
 	normalEstimation_scene.setInputCloud(cloud_scene);
-	normalEstimation_scene.setRadiusSearch(1);//5
+	normalEstimation_scene.setRadiusSearch(0.1);//5
 	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr kdtree_scene(new pcl::search::KdTree<pcl::PointXYZRGB>);
 	normalEstimation_scene.setSearchMethod(kdtree_scene);
 	normalEstimation_scene.compute(*normals_scene);
@@ -163,7 +178,7 @@ main(int argc, char** argv)
 	pfh_scene.setSearchMethod(kdtree_scene);
 	// Search radius, to look for neighbors. Note: the value given here has to be
 	// larger than the radius used to estimate the normals.
-	pfh_scene.setRadiusSearch(1);
+	pfh_scene.setRadiusSearch(0.3);
 
 	pfh_scene.compute(*descriptors_scene);
 
@@ -173,7 +188,7 @@ main(int argc, char** argv)
 	// Estimate the normals.
 	pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalEstimation_model;
 	normalEstimation_model.setInputCloud(cloud_model);
-	normalEstimation_model.setRadiusSearch(1);
+	normalEstimation_model.setRadiusSearch(0.1);
 	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr kdtree_model(new pcl::search::KdTree<pcl::PointXYZRGB>);
 	normalEstimation_model.setSearchMethod(kdtree_model);
 	normalEstimation_model.compute(*normals_model);
@@ -185,7 +200,7 @@ main(int argc, char** argv)
 	pfh_model.setSearchMethod(kdtree_model);
 	// Search radius, to look for neighbors. Note: the value given here has to be
 	// larger than the radius used to estimate the normals.
-	pfh_model.setRadiusSearch(1);
+	pfh_model.setRadiusSearch(0.3);
 
 	pfh_model.compute(*descriptors_model);
 
@@ -199,6 +214,7 @@ main(int argc, char** argv)
 	pcl::CorrespondencesPtr correspondences(new pcl::Correspondences());
 
 	// Check every descriptor computed for the scene.
+	double min_dist = 1000000;
 	for (size_t i = 0; i < descriptors_scene->size(); ++i)
 	{
 		std::vector<int> neighbors(1);
@@ -209,8 +225,9 @@ main(int argc, char** argv)
 			// Find the nearest neighbor (in descriptor space)...
 			int neighborCount = matching.nearestKSearch(descriptors_scene->at(i), 1, neighbors, squaredDistances);
 			// ...and add a new correspondence if the distance is less than a threshold
-		
-			if (neighborCount == 1 && squaredDistances[0] < 0.25f)
+			if(squaredDistances[0]<min_dist)
+				min_dist = squaredDistances[0];
+			if (neighborCount == 1)
 			{
 				//std::cout << neighbors[0] << " " << squaredDistances[0] << std::endl;
 				pcl::Correspondence correspondence(neighbors[0], static_cast<int>(i), squaredDistances[0]);
@@ -218,6 +235,7 @@ main(int argc, char** argv)
 			}
 		}
 	}
+	std::cout << "min neighbor dist: " << min_dist << std::endl;
 	std::cout << "Found " << correspondences->size() << " correspondences." << std::endl;
 
 
@@ -236,7 +254,7 @@ main(int argc, char** argv)
 	grouping.setGCThreshold(3);
 	// Resolution of the consensus set used to cluster correspondences together,
 	// in metric units. Default is 1.0.
-	grouping.setGCSize(0.01);
+	grouping.setGCSize(0.005);
 
 	grouping.recognize(transformations, clusteredCorrespondences);
 
@@ -260,7 +278,7 @@ main(int argc, char** argv)
 	viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "scene_cloud");
 
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_model_off(new pcl::PointCloud<pcl::PointXYZRGB>);
-	pcl::transformPointCloud (*cloud_model, *cloud_model_off, Eigen::Vector3f (-20,0,0), Eigen::Quaternionf (1, 0, 0, 0));//-20
+	pcl::transformPointCloud (*cloud_model, *cloud_model_off, Eigen::Vector3f (-2,0,0), Eigen::Quaternionf (1, 0, 0, 0));//-20
 	for (size_t i = 0; i < cloud_model_off->points.size (); ++i)
 	{
 	  	cloud_model_off->points[i].r = 0;

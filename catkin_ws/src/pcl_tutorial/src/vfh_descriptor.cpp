@@ -24,7 +24,7 @@ main(int argc, char** argv)
 	// Estimate the normals.
 	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimation;
 	normalEstimation.setInputCloud(cloud);
-	normalEstimation.setRadiusSearch(5);
+	normalEstimation.setRadiusSearch(0.1);
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
 	normalEstimation.setSearchMethod(kdtree);
 	normalEstimation.compute(*normals);
@@ -39,7 +39,7 @@ main(int argc, char** argv)
 	vfh.setNormalizeBins(true);
 	// Also, we can normalize the SDC with the maximum size found between
 	// the centroid and any of the cluster's points.
-	vfh.setNormalizeDistance(false);
+	vfh.setNormalizeDistance(true);
 
 	vfh.compute(*descriptor);
 	pcl::io::savePCDFileASCII ("descriptor.xml", *descriptor);

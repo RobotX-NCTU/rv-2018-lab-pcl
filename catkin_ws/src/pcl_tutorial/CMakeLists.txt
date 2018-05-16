@@ -228,3 +228,6 @@ target_link_libraries(pfh_classifier ${catkin_LIBRARIES})
 
 add_executable(matching src/matching.cpp)
 target_link_libraries(matching ${catkin_LIBRARIES})
+
+add_executable(pcd_modifier src/pcd_modifier.cpp)
+target_link_libraries(pcd_modifier ${catkin_LIBRARIES})

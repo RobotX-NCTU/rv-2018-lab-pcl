@@ -23,7 +23,7 @@ main (int argc, char** argv)
 
   std::cout << "Loaded :\n"
             << argv[1]
-            << "size: "
+            << "\nsize: "
             << cloud->width * cloud->height
             << std::endl;
             
@@ -52,8 +52,7 @@ main (int argc, char** argv)
 
   // to prevent border conditions, I expand the and max by a small value
   max_r += 0.01;
-
-
+  
   // Step 2: create histogram (10 intervals)
   // Place points in the histogram
   float interval_size = 0.1;
@@ -82,8 +81,8 @@ main (int argc, char** argv)
   // Totem:
   float dist_totem = 0;
   float dist_buoy = 0;
-  float totem[10] = {0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.9};
-  float buoy[10] = {0.01, 0.0, 0.08, 0.14, 0.18, 0.14, 0.12, 0.11, 0.1, 0.05};
+  float totem[10] = {0.04, 0.18, 0.22, 0.13, 0.16, 0.1, 0.1, 0.03, 0.04, 0.02};
+  float buoy[10] = {0.04, 0.07, 0.22, 0.13, 0.17, 0.15, 0.09, 0.09, 0, 0.04};
 
   for (i = 0; i < 10; i++){
     dist_totem += std::abs((totem[i] - descriptor.histogram[i]));

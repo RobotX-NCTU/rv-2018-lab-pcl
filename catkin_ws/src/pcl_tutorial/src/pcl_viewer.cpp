@@ -62,8 +62,8 @@ main (int argc, char** argv)
   // We add the point cloud to the viewer and pass the color handler
   viewer.addPointCloud (source_cloud, "point_cloud");
 
-
-  viewer.setBackgroundColor(0.05, 0.05, 0.05, 0); // Setting background to a dark grey
+  viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "point_cloud");
+  viewer.setBackgroundColor(0, 0, 0, 0); // Setting background to a dark grey
   //viewer.setPosition(800, 400); // Setting visualiser window position
   viewer.addCoordinateSystem();
   while (!viewer.wasStopped ()) { // Display the visualiser until 'q' key is pressed
