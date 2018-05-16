@@ -65,7 +65,7 @@ main (int argc, char** argv)
 
   viewer.setBackgroundColor(0.05, 0.05, 0.05, 0); // Setting background to a dark grey
   //viewer.setPosition(800, 400); // Setting visualiser window position
-
+  viewer.addCoordinateSystem();
   while (!viewer.wasStopped ()) { // Display the visualiser until 'q' key is pressed
     viewer.spinOnce ();
   }

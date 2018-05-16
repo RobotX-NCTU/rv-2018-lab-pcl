@@ -6,9 +6,42 @@
 #include <pcl/correspondence.h>
 #include <pcl/common/transforms.h>
 #include <pcl/recognition/cg/geometric_consistency.h>
+#include <pcl/keypoints/iss_3d.h>
+double
+computeCloudResolution(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& cloud)
+{
+	double resolution = 0.0;
+	int numberOfPoints = 0;
+	int nres;
+	std::vector<int> indices(2);
+	std::vector<float> squaredDistances(2);
+	pcl::search::KdTree<pcl::PointXYZRGB> tree;
+	tree.setInputCloud(cloud);
+
+	for (size_t i = 0; i < cloud->size(); ++i)
+	{
+		if (! pcl_isfinite((*cloud)[i].x))
+			continue;
+
+		// Considering the second neighbor since the first is the point itself.
+		nres = tree.nearestKSearch(i, 2, indices, squaredDistances);
+		if (nres == 2)
+		{
+			resolution += sqrt(squaredDistances[1]);
+			++numberOfPoints;
+		}
+	}
+	if (numberOfPoints != 0)
+		resolution /= numberOfPoints;
+
+	return resolution;
+}
+
 int
 main(int argc, char** argv)
 {
+
+
 	// Step 1: get input data & get keypoints
 
 	// Object for storing the point cloud.
@@ -33,7 +66,84 @@ main(int argc, char** argv)
 	{
 		return -1;
 	}
+	// Scale model to match scene's size
+	double cloud_scene_max_x = -1000000;
+	double cloud_scene_min_x = 1000000;
+	for (size_t i = 0; i < cloud_scene->points.size (); ++i)
+  	{
+  		if (cloud_scene->points[i].x > cloud_scene_max_x)
+  			cloud_scene_max_x = cloud_scene->points[i].x;
+  		if (cloud_scene->points[i].x < cloud_scene_min_x)
+  			cloud_scene_min_x = cloud_scene->points[i].x;
+  	}
 
+	double cloud_model_max_x = -1000000;
+	double cloud_model_min_x = 1000000;
+	for (size_t i = 0; i < cloud_model->points.size (); ++i)
+  	{
+  		if (cloud_model->points[i].x > cloud_model_max_x)
+  			cloud_model_max_x = cloud_model->points[i].x;
+  		if (cloud_model->points[i].x < cloud_model_min_x)
+  			cloud_model_min_x = cloud_model->points[i].x;
+  	}
+
+  	double scaling_factor = (cloud_model_max_x-cloud_model_min_x)/(cloud_scene_max_x-cloud_scene_min_x);
+  	Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
+	transform (0,0) = transform (0,0) * scaling_factor;
+	transform (1,1) = transform (1,1) * scaling_factor;
+	transform (2,2) = transform (2,2) * scaling_factor;
+	pcl::transformPointCloud (*cloud_scene, *cloud_scene, transform); 
+
+	/*
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints_scene(new pcl::PointCloud<pcl::PointXYZRGB>);
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints_model(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+	// ISS keypoint detector object.
+	pcl::ISSKeypoint3D<pcl::PointXYZRGB, pcl::PointXYZRGB> detector_scene;
+	detector_scene.setInputCloud(cloud_scene);
+	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr kdtree_scene_det(new pcl::search::KdTree<pcl::PointXYZRGB>);
+	detector_scene.setSearchMethod(kdtree_scene_det);
+	double resolution_scene = computeCloudResolution(cloud_scene);
+	// Set the radius of the spherical neighborhood used to compute the scatter matrix.
+	detector_scene.setSalientRadius(6 * resolution_scene);
+	// Set the radius for the application of the non maxima supression algorithm.
+	detector_scene.setNonMaxRadius(4 * resolution_scene);
+	// Set the minimum number of neighbors that has to be found while applying the non maxima suppression algorithm.
+	detector_scene.setMinNeighbors(5);
+	// Set the upper bound on the ratio between the second and the first eigenvalue.
+	detector_scene.setThreshold21(0.975);
+	// Set the upper bound on the ratio between the third and the second eigenvalue.
+	detector_scene.setThreshold32(0.975);
+	// Set the number of prpcessing threads to use. 0 sets it to automatic.
+	detector_scene.setNumberOfThreads(4);
+	
+	detector_scene.compute(*keypoints_scene);
+
+	// ISS keypoint detector object.
+	pcl::ISSKeypoint3D<pcl::PointXYZRGB, pcl::PointXYZRGB> detector_model;
+
+	detector_model.setInputCloud(cloud_model);
+	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr kdtree_model_det(new pcl::search::KdTree<pcl::PointXYZRGB>);
+	detector_model.setSearchMethod(kdtree_model_det);
+	double resolution_model = computeCloudResolution(cloud_model);
+	// Set the radius of the spherical neighborhood used to compute the scatter matrix.
+	detector_model.setSalientRadius(6 * resolution_model);
+	// Set the radius for the application of the non maxima supression algorithm.
+	detector_model.setNonMaxRadius(4 * resolution_model);
+	// Set the minimum number of neighbors that has to be found while applying the non maxima suppression algorithm.
+	detector_model.setMinNeighbors(5);
+	// Set the upper bound on the ratio between the second and the first eigenvalue.
+	detector_model.setThreshold21(0.975);
+	// Set the upper bound on the ratio between the third and the second eigenvalue.
+	detector_model.setThreshold32(0.975);
+	// Set the number of prpcessing threads to use. 0 sets it to automatic.
+	detector_model.setNumberOfThreads(4);
+	
+	detector_model.compute(*keypoints_model);
+
+	std::cout << keypoints_scene->points.size() << " " << keypoints_model->points.size() << std::endl;
+	*/
+	
 	// Step 2: calculate descriptors from keypoints
 
 	// Object for storing the PFH descriptors for each point.
@@ -41,7 +151,7 @@ main(int argc, char** argv)
 	// Estimate the normals.
 	pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalEstimation_scene;
 	normalEstimation_scene.setInputCloud(cloud_scene);
-	normalEstimation_scene.setRadiusSearch(5);
+	normalEstimation_scene.setRadiusSearch(1);//5
 	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr kdtree_scene(new pcl::search::KdTree<pcl::PointXYZRGB>);
 	normalEstimation_scene.setSearchMethod(kdtree_scene);
 	normalEstimation_scene.compute(*normals_scene);
@@ -53,7 +163,7 @@ main(int argc, char** argv)
 	pfh_scene.setSearchMethod(kdtree_scene);
 	// Search radius, to look for neighbors. Note: the value given here has to be
 	// larger than the radius used to estimate the normals.
-	pfh_scene.setRadiusSearch(5);
+	pfh_scene.setRadiusSearch(1);
 
 	pfh_scene.compute(*descriptors_scene);
 
@@ -63,7 +173,7 @@ main(int argc, char** argv)
 	// Estimate the normals.
 	pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalEstimation_model;
 	normalEstimation_model.setInputCloud(cloud_model);
-	normalEstimation_model.setRadiusSearch(5);
+	normalEstimation_model.setRadiusSearch(1);
 	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr kdtree_model(new pcl::search::KdTree<pcl::PointXYZRGB>);
 	normalEstimation_model.setSearchMethod(kdtree_model);
 	normalEstimation_model.compute(*normals_model);
@@ -75,7 +185,7 @@ main(int argc, char** argv)
 	pfh_model.setSearchMethod(kdtree_model);
 	// Search radius, to look for neighbors. Note: the value given here has to be
 	// larger than the radius used to estimate the normals.
-	pfh_model.setRadiusSearch(5);
+	pfh_model.setRadiusSearch(1);
 
 	pfh_model.compute(*descriptors_model);
 
@@ -130,7 +240,7 @@ main(int argc, char** argv)
 
 	grouping.recognize(transformations, clusteredCorrespondences);
 
-	std::cout << "Model instances found: " << transformations.size() << std::endl << std::endl;
+		std::cout << "Model instances found: " << transformations.size() << std::endl << std::endl;
 	for (size_t i = 0; i < transformations.size(); i++)
 	{
 		std::cout << "Instance " << (i + 1) << ":" << std::endl;
@@ -144,33 +254,38 @@ main(int argc, char** argv)
 		std::cout << std::endl;
 		printf("\t\tt = < %0.3f, %0.3f, %0.3f >\n", translation(0), translation(1), translation(2));
 	}
-	if(clusteredCorrespondences.size()>0){
-		pcl::visualization::PCLVisualizer viewer ("Correspondence Grouping");
-		viewer.addPointCloud (cloud_scene, "scene_cloud");
-		viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "scene_cloud");
-		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_model_off(new pcl::PointCloud<pcl::PointXYZRGB>);
-		pcl::transformPointCloud (*cloud_model, *cloud_model_off, Eigen::Vector3f (-20,0,0), Eigen::Quaternionf (1, 0, 0, 0));
-		for (size_t i = 0; i < cloud_model_off->points.size (); ++i)
-	  	{
-	  		cloud_model_off->points[i].r = 0;
-	    	cloud_model_off->points[i].g = 0;
-	    	cloud_model_off->points[i].b = 255;
-	  	}
-		viewer.addPointCloud (cloud_model_off, "model_cloud_off");
-		viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "model_cloud_off");
-		for (size_t j = 0; j < clusteredCorrespondences[0].size(); ++j){
-			std::stringstream ss_line;
-	        ss_line << "correspondence_line" << 0 << "_" << j;
-			pcl::PointXYZRGB model_point = cloud_model_off->at (clusteredCorrespondences[0][j].index_query);
-	        pcl::PointXYZRGB scene_point = cloud_scene->at (clusteredCorrespondences[0][j].index_match);
-	        viewer.addLine<pcl::PointXYZRGB, pcl::PointXYZRGB> (model_point, scene_point, 50, 0, 50, ss_line.str ());
-		}
-		//viewer.addCoordinateSystem();
-		while (!viewer.wasStopped ())
-	  	{
-	    	viewer.spinOnce ();
-	  	}
-  	}
+
+	pcl::visualization::PCLVisualizer viewer ("correspondences");
+	viewer.addPointCloud (cloud_scene, "scene_cloud");
+	viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "scene_cloud");
+
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_model_off(new pcl::PointCloud<pcl::PointXYZRGB>);
+	pcl::transformPointCloud (*cloud_model, *cloud_model_off, Eigen::Vector3f (-20,0,0), Eigen::Quaternionf (1, 0, 0, 0));//-20
+	for (size_t i = 0; i < cloud_model_off->points.size (); ++i)
+	{
+	  	cloud_model_off->points[i].r = 0;
+	    cloud_model_off->points[i].g = 0;
+	    cloud_model_off->points[i].b = 255;
+	}
+	viewer.addPointCloud (cloud_model_off, "model_cloud_off");
+	viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "model_cloud_off");
+
+	
+		
+	for (size_t j = 0; j < correspondences->size(); ++j){
+		std::stringstream ss_line;
+	    ss_line << "correspondence_line" << 0 << "_" << j;
+	    pcl::Correspondence corr = correspondences->at(j);
+		pcl::PointXYZRGB model_point = cloud_model_off->at (corr.index_query);
+	    pcl::PointXYZRGB scene_point = cloud_scene->at (corr.index_match);
+	    viewer.addLine<pcl::PointXYZRGB, pcl::PointXYZRGB> (model_point, scene_point, 50, 0, 50, ss_line.str ());
+	}
+  	
+  	//viewer.addCoordinateSystem();
+	while (!viewer.wasStopped ())
+	{
+	    viewer.spinOnce ();
+	}
 }
 
 	
